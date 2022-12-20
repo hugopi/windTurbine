@@ -1,0 +1,17 @@
+Training final loss : 
+0.5254826545715332
+
+Training final MSE : 
+0.7730873823165894
+
+Validation final loss : 
+0.5382919907569885
+
+Validation final MSE : 
+0.7979294061660767
+
+Test final loss : 
+0.6191685795783997
+
+Test final MSE : 
+0.4977022409439087

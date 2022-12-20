@@ -2,14 +2,14 @@
 
 CFG = {
     "dataset": {
-        "path": "C:/Users/pires/PycharmProjects/IPSA/Aero5/windTurbine/Ressources/Turbine_Data_project.csv",
+        "path": "D:/PycharmProjects/IPSA/Aero5/windTurbine/Ressources/Turbine_Data_project.csv",
         "train_size": 0.8,
         "test_size": 0.5
     },
     "fit": {
         "batchSize": 16384,
-        "epochs": 100,
-        "loss": 'mean_absolute_error',
+        "epochs": 200,
+        "loss": 'mean_squared_logarithmic_error',
         "learningRate": 0.001,
         "metrics": ["mse"]
     },
@@ -23,6 +23,6 @@ CFG = {
         "layer_kernel_regularizer": [0.01, 0.01, 0.01, 0.01, 0.01, 0.01],
         "layer_activity_regularizer": [0.01, 0.01, 0.01, 0.01, 0.01, 0.01],
         "saveDirectoryPath": 'savings',
-        "testName": 'mean_absolute_error2'
+        "testName": 'mean_squared_logarithmic_error'
     }
 }

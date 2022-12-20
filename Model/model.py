@@ -85,7 +85,7 @@ class Model(dataset.Dataset):
         batchSize = config['fit']['batchSize']
         print("Evaluate on test data")
         results = self._model.evaluate(self._X_test, self._X_test, batch_size=batchSize)
-        print("test loss, test acc:", results)
+        print("test loss, test MSE:", results)
 
         # plot loss during training
         fig = plt.figure()

@@ -2,13 +2,13 @@
 
 CFG = {
     "dataset": {
-        "path": "C:/Users/pires/PycharmProjects/IPSA/Aero5/windTurbine/Ressources/Turbine_Data_project.csv",
+        "path": "D:/PycharmProjects/IPSA/Aero5/windTurbine/Ressources/Turbine_Data_project.csv",
         "train_size": 0.8,
         "test_size": 0.5
     },
     "fit": {
         "batchSize": 16384,
-        "epochs": 100,
+        "epochs": 200,
         "loss": 'mean_squared_logarithmic_error',
         "learningRate": 0.001,
         "metrics": ["mse"]

@@ -23,6 +23,6 @@ CFG = {
         "layer_kernel_regularizer": [0.01, 0.01, 0.01, 0.01, 0.01, 0.01],
         "layer_activity_regularizer": [0.01, 0.01, 0.01, 0.01, 0.01, 0.01],
         "saveDirectoryPath": 'savings',
-        "testName": 'mean_squared_logarithmic_error'
+        "testName": 'first_RNN'
     }
 }

@@ -1,14 +1,14 @@
 import os
 import shutil
 
+import keras
 import tensorflow as tf
 from tensorflow.keras import regularizers
 from Dataset import dataset
 from matplotlib import pyplot as plt
-from keras.utils.vis_utils import plot_model
 
 
-class Model(dataset.Dataset):
+class RNN(dataset.Dataset):
 
     def __init__(self, name):
         super().__init__(name)
@@ -21,39 +21,28 @@ class Model(dataset.Dataset):
         # parameters
         inputLayer = config['model']['input']
         outputLayer = config['model']['output']
-        layerDimensions = config['model']['layer_dim']
-        layerNames = config['model']['layer_names']
-        layerActivation = config['model']['layer_activations']
-        layerKernelInitializer = config['model']['layer_kernel_initializer']
-        layerKernelRegularizer = config['model']['layer_kernel_regularizer']
-        layerActivityRegularizer = config['model']['layer_activity_regularizer']
+        batchSize = config['fit']['batchSize']
+
+        # load data
+        RNN.load_data(self, config)
 
         # create the model
         self._model = tf.keras.Sequential()
-
+        # input_size = 2
+        # sequence_length = time step = 6000...
+        # batch_input_shape = (batch_size,time step,input_size)
+        # units = layer dim = output unit
         # add the input layer
-        self._model.add(
-            tf.keras.layers.Dense(1, input_shape=inputLayer, kernel_initializer='normal', activation='relu',
-                                  kernel_regularizer=regularizers.l1(0.01),
-                                  bias_regularizer=regularizers.l1(0.01),
-                                  activity_regularizer=regularizers.l1(0.01)))
-        self._model.add(tf.keras.layers.BatchNormalization())
-        tf.keras.layers.Dropout(0.2)
 
-        # add hidden layer
-        for i in range(len(layerDimensions)):
-            self._model.add(tf.keras.layers.Dense(layerDimensions[i],
-                                                  activation=layerActivation[i],
-                                                  name=layerNames[i],
-                                                  kernel_regularizer=regularizers.l1(0.01),
-                                                  bias_regularizer=regularizers.l1(0.01),
-                                                  activity_regularizer=regularizers.l1(0.01)))
-            self._model.add(tf.keras.layers.BatchNormalization())
-            tf.keras.layers.Dropout(0.2)
+        self._model.add(tf.keras.layers.LSTM(units=128, batch_input_shape=(
+            batchSize, self._X_train.shape[0], self._X_train.shape[1]), return_sequences=False, activation='relu'))
+        #self._model.add(tf.keras.layers.LSTM(units=128))
 
         # add the output layer
         self._model.add(
             tf.keras.layers.Dense(outputLayer, kernel_initializer='normal'))
+
+        self._model.summary()
 
     def run(self, config):
         # parameters
@@ -67,18 +56,16 @@ class Model(dataset.Dataset):
 
         # optimizer = tf.keras.optimizers.Adam(config['fit']['learningRate'])
         metrics = config['fit']['metrics']
-        batchSize = config['fit']['batchSize']
 
         # compile
         self._model.compile(loss=loss, optimizer=optimizer, metrics=metrics)
 
+        #x_train = self._X_train.reshape(self._X_train.shape[0], self._X_train.shape[1], 1)
         # train
         self._history_train = self._model.fit(self._X_train, self._y_train,
-                                              validation_data=(self._X_valid, self._y_valid),
-                                              epochs=epochs, batch_size=batchSize, verbose=1)
+                                              epochs=epochs, verbose=1)
 
     def diagnostic(self, config):
-
         # test
         # Evaluate the model on the test data using `evaluate`
         batchSize = config['fit']['batchSize']
@@ -120,7 +107,6 @@ class Model(dataset.Dataset):
         # save config
         src = 'Configs/configs.py'
         shutil.copy(src, target)
-        plot_model(self._model, to_file=target + '/' + 'model_plot.png', show_shapes=True, show_layer_names=True)
 
         # save history
         epoch = config['fit']['epochs'] - 1

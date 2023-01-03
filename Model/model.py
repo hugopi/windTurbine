@@ -28,6 +28,9 @@ class Model(dataset.Dataset):
         layerKernelRegularizer = config['model']['layer_kernel_regularizer']
         layerActivityRegularizer = config['model']['layer_activity_regularizer']
 
+        # load data
+        Model.load_data(self, config)
+
         # create the model
         self._model = tf.keras.Sequential()
 
@@ -53,7 +56,7 @@ class Model(dataset.Dataset):
 
         # add the output layer
         self._model.add(
-            tf.keras.layers.Dense(outputLayer, kernel_initializer='normal'))
+            tf.keras.layers.Dense(outputLayer, activation='linear', kernel_initializer='normal'))
 
     def run(self, config):
         # parameters
@@ -107,7 +110,7 @@ class Model(dataset.Dataset):
         plt.show()
 
         # save trial
-        testName = config['model']['testName']
+        testName = self._name
         path = config['model']['saveDirectoryPath']
         target = path + '/' + testName
 
@@ -120,7 +123,7 @@ class Model(dataset.Dataset):
         # save config
         src = 'Configs/configs.py'
         shutil.copy(src, target)
-        plot_model(self._model, to_file=target + '/' + 'model_plot.png', show_shapes=True, show_layer_names=True)
+        #plot_model(self._model, to_file=target + '/' + 'model_plot.png', show_shapes=True, show_layer_names=True)
 
         # save history
         epoch = config['fit']['epochs'] - 1

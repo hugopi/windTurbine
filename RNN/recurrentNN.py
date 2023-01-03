@@ -6,6 +6,7 @@ import tensorflow as tf
 from tensorflow.keras import regularizers
 from Dataset import dataset
 from matplotlib import pyplot as plt
+from sklearn.metrics import mean_squared_error
 
 
 class RNN(dataset.Dataset):
@@ -14,6 +15,12 @@ class RNN(dataset.Dataset):
         super().__init__(name)
         self._model = None
         self._name = name
+        self._X_train_lstm = None
+        self._y_train_lstm = None
+        self._X_valid_lstm = None
+        self._y_valid_lstm = None
+        self._X_test_lstm = None
+        self._y_test_lstm = None
         self._history_train = None
         self._history_test = None
 
@@ -21,26 +28,24 @@ class RNN(dataset.Dataset):
         # parameters
         inputLayer = config['model']['input']
         outputLayer = config['model']['output']
-        batchSize = config['fit']['batchSize']
+        numberOfSteps = config['model']['numberOfSteps']
 
         # load data
         RNN.load_data(self, config)
+        # reshape for lstm process
+        self._X_train_lstm, self._y_train_lstm = RNN.lstm_data_transform(self._X_train, self._y_train, num_steps=numberOfSteps)
+        self._X_valid_lstm, self._y_valid_lstm = RNN.lstm_data_transform(self._X_valid, self._y_valid, num_steps=numberOfSteps)
+        self._X_test_lstm, self._y_test_lstm = RNN.lstm_data_transform(self._X_test, self._y_test, num_steps=numberOfSteps)
 
         # create the model
         self._model = tf.keras.Sequential()
-        # input_size = 2
-        # sequence_length = time step = 6000...
-        # batch_input_shape = (batch_size,time step,input_size)
-        # units = layer dim = output unit
-        # add the input layer
 
-        self._model.add(tf.keras.layers.LSTM(units=128, batch_input_shape=(
-            batchSize, self._X_train.shape[0], self._X_train.shape[1]), return_sequences=False, activation='relu'))
-        #self._model.add(tf.keras.layers.LSTM(units=128))
+        self._model.add(tf.keras.layers.LSTM(20, activation='tanh', input_shape=(numberOfSteps, inputLayer[0]), return_sequences=False))
 
+        self._model.add(tf.keras.layers.Dense(units=20, activation='relu'))
         # add the output layer
         self._model.add(
-            tf.keras.layers.Dense(outputLayer, kernel_initializer='normal'))
+            tf.keras.layers.Dense(outputLayer, activation='linear', kernel_initializer='normal'))
 
         self._model.summary()
 
@@ -53,25 +58,25 @@ class RNN(dataset.Dataset):
             decay_steps=10000,
             decay_rate=0.9)
         optimizer = tf.keras.optimizers.SGD(learning_rate=lr_schedule)
-
         # optimizer = tf.keras.optimizers.Adam(config['fit']['learningRate'])
+
         metrics = config['fit']['metrics']
 
         # compile
         self._model.compile(loss=loss, optimizer=optimizer, metrics=metrics)
 
-        #x_train = self._X_train.reshape(self._X_train.shape[0], self._X_train.shape[1], 1)
         # train
-        self._history_train = self._model.fit(self._X_train, self._y_train,
+        self._history_train = self._model.fit(self._X_train_lstm, self._y_train_lstm,
+                                              validation_data=(self._X_valid_lstm, self._y_valid_lstm),
                                               epochs=epochs, verbose=1)
 
     def diagnostic(self, config):
         # test
         # Evaluate the model on the test data using `evaluate`
-        batchSize = config['fit']['batchSize']
         print("Evaluate on test data")
-        results = self._model.evaluate(self._X_test, self._X_test, batch_size=batchSize)
-        print("test loss, test MSE:", results)
+        test_predict = self._model.predict(self._X_test_lstm)
+        mse = mean_squared_error(test_predict, self._y_test_lstm)
+        print("test MSE:", mse)
 
         # plot loss during training
         fig = plt.figure()
@@ -94,7 +99,7 @@ class RNN(dataset.Dataset):
         plt.show()
 
         # save trial
-        testName = config['model']['testName']
+        testName = self._name
         path = config['model']['saveDirectoryPath']
         target = path + '/' + testName
 
@@ -128,9 +133,5 @@ class RNN(dataset.Dataset):
         fichier.write(f"\n{self._history_train.history['val_mse'][epoch]}")
         fichier.write('\n')
 
-        fichier.write('\nTest final loss : ')
-        fichier.write(f"\n{results[0]}")
-        fichier.write('\n')
-
         fichier.write('\nTest final MSE : ')
-        fichier.write(f"\n{results[1]}")
+        fichier.write(f"\n{mse}")

@@ -8,7 +8,7 @@ CFG = {
     },
     "fit": {
         "batchSize": 16384,
-        "epochs": 200,
+        "epochs": 500,
         "loss": 'mean_squared_logarithmic_error',
         "learningRate": 0.001,
         "metrics": ["mse"]

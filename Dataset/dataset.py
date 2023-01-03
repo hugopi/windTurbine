@@ -1,3 +1,4 @@
+import numpy as np
 import pandas as pd
 from matplotlib import pyplot as plt
 from sklearn.preprocessing import Normalizer
@@ -80,4 +81,21 @@ class Dataset:
         plt.suptitle(self._name)
         plt.show()
 
-
+    @staticmethod
+    def lstm_data_transform(x_data, y_data, num_steps=5):
+        """ Changes data to the format for LSTM training 
+    for sliding window approach """  # Prepare the list for the transformed data
+        X, y = list(), list()  # Loop of the entire data set
+        for i in range(x_data.shape[0]):
+            # compute a new (sliding window) index
+            end_ix = i + num_steps  # if index is larger than the size of the dataset, we stop
+            if end_ix >= x_data.shape[0]:
+                break  # Get a sequence of data for x
+            seq_X = x_data[i:end_ix]
+            # Get only the last element of the sequency for y
+            seq_y = y_data[end_ix]  # Append the list with sequencies
+            X.append(seq_X)
+            y.append(seq_y)  # Make final arrays
+        x_array = np.array(X)
+        y_array = np.array(y)
+        return x_array, y_array

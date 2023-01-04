@@ -24,9 +24,6 @@ class Model(dataset.Dataset):
         layerDimensions = config['model']['layer_dim']
         layerNames = config['model']['layer_names']
         layerActivation = config['model']['layer_activations']
-        layerKernelInitializer = config['model']['layer_kernel_initializer']
-        layerKernelRegularizer = config['model']['layer_kernel_regularizer']
-        layerActivityRegularizer = config['model']['layer_activity_regularizer']
 
         # load data
         Model.load_data(self, config)

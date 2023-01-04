@@ -7,10 +7,10 @@ CFG = {
         "test_size": 0.5
     },
     "fit": {
-        "batchSize": 16384,
-        "epochs": 10,
-        "loss": 'mean_squared_logarithmic_error',
-        "learningRate": 0.001,
+        "batchSize": 128,
+        "epochs": 100,
+        "loss": 'mse',
+        "learningRate": 0.01,
         "metrics": ["mse"]
     },
     "model": {
@@ -23,7 +23,6 @@ CFG = {
         "layer_kernel_regularizer": [0.01, 0.01, 0.01, 0.01, 0.01, 0.01],
         "layer_activity_regularizer": [0.01, 0.01, 0.01, 0.01, 0.01, 0.01],
         "saveDirectoryPath": 'savings',
-        "testName": 'myFirstRNN',
-        "numberOfSteps": 5
+        "numberOfSteps": 1
     }
 }

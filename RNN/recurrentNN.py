@@ -33,16 +33,46 @@ class RNN(dataset.Dataset):
         # load data
         RNN.load_data(self, config)
         # reshape for lstm process
-        self._X_train_lstm, self._y_train_lstm = RNN.lstm_data_transform(self._X_train, self._y_train, num_steps=numberOfSteps)
-        self._X_valid_lstm, self._y_valid_lstm = RNN.lstm_data_transform(self._X_valid, self._y_valid, num_steps=numberOfSteps)
-        self._X_test_lstm, self._y_test_lstm = RNN.lstm_data_transform(self._X_test, self._y_test, num_steps=numberOfSteps)
+        self._X_train_lstm, self._y_train_lstm = RNN.lstm_data_transform(self._X_train, self._y_train,
+                                                                         num_steps=numberOfSteps)
+        self._X_valid_lstm, self._y_valid_lstm = RNN.lstm_data_transform(self._X_valid, self._y_valid,
+                                                                         num_steps=numberOfSteps)
+        self._X_test_lstm, self._y_test_lstm = RNN.lstm_data_transform(self._X_test, self._y_test,
+                                                                       num_steps=numberOfSteps)
 
         # create the model
         self._model = tf.keras.Sequential()
 
-        self._model.add(tf.keras.layers.LSTM(20, activation='tanh', input_shape=(numberOfSteps, inputLayer[0]), return_sequences=False))
+        self._model.add(tf.keras.layers.GRU(8, activation='tanh', input_shape=(numberOfSteps, inputLayer[0]),
+                                             kernel_regularizer=regularizers.l1(0.01),
+                                             bias_regularizer=regularizers.l1(0.01),
+                                             activity_regularizer=regularizers.l1(0.01),
+                                             return_sequences=True))
+        self._model.add(tf.keras.layers.BatchNormalization())
+        tf.keras.layers.Dropout(0.2)
 
-        self._model.add(tf.keras.layers.Dense(units=20, activation='relu'))
+        self._model.add(tf.keras.layers.GRU(16, activation='tanh',
+                                             kernel_regularizer=regularizers.l1(0.01),
+                                             bias_regularizer=regularizers.l1(0.01),
+                                             activity_regularizer=regularizers.l1(0.01),
+                                             return_sequences=False))
+        self._model.add(tf.keras.layers.BatchNormalization())
+        tf.keras.layers.Dropout(0.2)
+
+        """self._model.add(tf.keras.layers.LSTM(32, activation='tanh',
+                                             kernel_regularizer=regularizers.l1(0.01),
+                                             bias_regularizer=regularizers.l1(0.01),
+                                             activity_regularizer=regularizers.l1(0.01),
+                                             return_sequences=False))
+        self._model.add(tf.keras.layers.BatchNormalization())
+        tf.keras.layers.Dropout(0.2)"""
+
+        self._model.add(tf.keras.layers.Dense(units=8, activation='relu', kernel_regularizer=regularizers.l1(0.01),
+                                              bias_regularizer=regularizers.l1(0.01),
+                                              activity_regularizer=regularizers.l1(0.01)))
+        self._model.add(tf.keras.layers.BatchNormalization())
+        tf.keras.layers.Dropout(0.2)
+
         # add the output layer
         self._model.add(
             tf.keras.layers.Dense(outputLayer, activation='linear', kernel_initializer='normal'))
@@ -53,6 +83,7 @@ class RNN(dataset.Dataset):
         # parameters
         epochs = config['fit']['epochs']
         loss = config['fit']['loss']
+        batchSize = config['fit']['batchSize']
         lr_schedule = tf.keras.optimizers.schedules.ExponentialDecay(
             initial_learning_rate=1e-2,
             decay_steps=10000,
@@ -68,7 +99,7 @@ class RNN(dataset.Dataset):
         # train
         self._history_train = self._model.fit(self._X_train_lstm, self._y_train_lstm,
                                               validation_data=(self._X_valid_lstm, self._y_valid_lstm),
-                                              epochs=epochs, verbose=1)
+                                              epochs=epochs, batch_size=batchSize, verbose=1)
 
     def diagnostic(self, config):
         # test

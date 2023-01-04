@@ -11,12 +11,12 @@ myDataset2 = dataset.Dataset('dataset 2')
 myDataset2.load_data(CFG, remove_zeros=0)
 myDataset2.show_hist()
 
-myModel = model.Model('model 1')
+myModel = model.Model('opti4')
 myModel.build(CFG)
 myModel.run(CFG)
-myModel.diagnostic(CFG)
-'''
-myRNN = recurrentNN.RNN('model 1')
+myModel.diagnostic(CFG)'''
+
+myRNN = recurrentNN.RNN('gru')
 myRNN.build(CFG)
 myRNN.run(CFG)
 myRNN.diagnostic(CFG)

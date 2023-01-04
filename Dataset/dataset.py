@@ -1,7 +1,7 @@
 import numpy as np
 import pandas as pd
 from matplotlib import pyplot as plt
-from sklearn.preprocessing import Normalizer
+from sklearn.preprocessing import Normalizer, StandardScaler
 from sklearn.model_selection import train_test_split
 
 
@@ -15,12 +15,17 @@ class Dataset:
         self._y = None
         self._X_normalized = None
         self._y_normalized = None
+        self._X_scaled = None
+        self._y_scaled = None
         self._X_train = None
         self._y_train = None
         self._X_valid = None
         self._y_valid = None
         self._X_test = None
         self._y_test = None
+        self._minimumBias = None
+        self._scaler_x = None
+        self._scaler_y = None
 
     def normalize(self):
         scaler_x = Normalizer().fit(self._X)
@@ -29,9 +34,20 @@ class Dataset:
         scaler_y = Normalizer().fit(self._y)
         self._y_normalized = scaler_y.transform(self._y)
 
+    def scale(self):
+        # get only positive value
+        self._minimumBias = min(self._y['Power'])
+        self._y = self._y + abs(self._minimumBias)
+        # scalers
+        self._scaler_x = StandardScaler()
+        self._scaler_y = StandardScaler()
+        # scaling
+        self._X_scaled = self._scaler_x.fit_transform(self._X)
+        self._y_scaled = self._scaler_y.fit_transform(self._y)
+
     def preprocess(self, config):
         # split values in train and remaining 80/20
-        self._X_train, X_rem, self._y_train, y_rem = train_test_split(self._X_normalized, self._y_normalized,
+        self._X_train, X_rem, self._y_train, y_rem = train_test_split(self._X_scaled, self._y_scaled,
                                                                       train_size=config['dataset']['train_size'])
         # split X_rem in test and validation 50/50
         self._X_valid, self._X_test, self._y_valid, self._y_test = train_test_split(X_rem, y_rem,
@@ -52,7 +68,8 @@ class Dataset:
 
         self._X = self._dataset[['WindSpeed', 'WindDirection']]
         self._y = self._dataset[['Power']]
-        Dataset.normalize(self)
+        #Dataset.normalize(self)
+        Dataset.scale(self)
         Dataset.preprocess(self, config)
 
     def show_hist(self):
